@@ -12,7 +12,7 @@ const DOMAINS = [
 const DOMAIN_COLOR = Object.fromEntries(DOMAINS.map(d=>[d.key,d.color]));
 const DOMAIN_LABEL = Object.fromEntries(DOMAINS.map(d=>[d.key,d.label]));
 const PROTEIN_LEN = 461;
-const TRIAD = [233,282,411];
+const TRIAD = [282,411]; // ruler ticks: only residues confirmed against wt_aa (see methodology)
 const DISULFIDE = [18,23,56,62,73,82,95,109,132,289,406,435];
 const SEV_COLOR = { Severe:'#A3211F', Moderate:'#C1811A', Mild:'#4F7D5B', Unclassified:'#5C6B8A' };
 const SEV_ORDER = ['Severe','Moderate','Mild','Unclassified'];
@@ -384,7 +384,7 @@ async function renderMainViewer(){
 renderStats();
 drawRuler('ruler-svg', {showLabels:true, showTicks:true});
 document.getElementById('ruler-legend').innerHTML =
-  `<span><i style="background:#E8C547;"></i>Catalytic triad</span><span><i style="background:#7DA9C4;"></i>Disulfide bond</span>`;
+  `<span><i style="background:#E8C547;"></i>Catalytic residue (confirmed)</span><span><i style="background:#7DA9C4;"></i>Disulfide cysteine</span>`;
 renderFigures();
 populateDomainFilter();
 applyFilters();
