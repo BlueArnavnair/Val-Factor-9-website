@@ -12,8 +12,8 @@ const DOMAINS = [
 const DOMAIN_COLOR = Object.fromEntries(DOMAINS.map(d=>[d.key,d.color]));
 const DOMAIN_LABEL = Object.fromEntries(DOMAINS.map(d=>[d.key,d.label]));
 const PROTEIN_LEN = 461;
-const TRIAD = [282,411]; // ruler ticks: only residues confirmed against wt_aa (see methodology)
-const DISULFIDE = [18,23,56,62,73,82,95,109,132,289,406,435];
+const TRIAD = [267,315,411]; // His267/Asp315/Ser411 — verified against wt_aa in this dataset's numbering
+const CYSTEINES = [18,28,64,69,97,102,108,117,119,128,134,141,145,155,157,170,178,252,268,335,382,396,407,435]; // every wt=Cys position actually recorded in the data (12 disulfide bonds implied, pairing not independently verified)
 const SEV_COLOR = { Severe:'#A3211F', Moderate:'#C1811A', Mild:'#4F7D5B', Unclassified:'#5C6B8A' };
 const SEV_ORDER = ['Severe','Moderate','Mild','Unclassified'];
 
@@ -44,8 +44,8 @@ function renderStats(){
   const stats = [
     { num: fmtInt(DATA.length), label:'Variant reports logged' },
     { num: domainsUsed, label:'Structural domains mapped' },
-    { num: DISULFIDE.length, label:'Disulfide bridges tracked' },
-    { num: TRIAD.length, label:'Catalytic triad residues' },
+    { num: CYSTEINES.length, label:'Disulfide-bonded cysteines tracked' },
+    { num: TRIAD.length, label:'Confirmed catalytic triad residues' },
   ];
   document.getElementById('stat-row').innerHTML = stats.map(s=>
     `<div class="stat"><span class="stat-num">${s.num}</span><span class="stat-label">${s.label}</span></div>`
@@ -70,7 +70,7 @@ function drawRuler(svgId, {height=118, showLabels=true, showTicks=true, markerRe
   });
 
   if (showTicks){
-    DISULFIDE.forEach(r=>{
+    CYSTEINES.forEach(r=>{
       const x = toX(r);
       parts.push(`<line x1="${x}" y1="${trackY-10}" x2="${x}" y2="${trackY}" stroke="#7DA9C4" stroke-width="1.5"/>`);
     });
@@ -287,21 +287,37 @@ document.getElementById('f-missense').addEventListener('change', applyFilters);
 
 function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
 
-/* ===================== 3D STRUCTURE LOADING (robust) ===================== */
-let _pdbCache = null;
-async function loadPDBText(){
-  if (_pdbCache) return _pdbCache;
-  const resp = await fetch('https://files.rcsb.org/download/1CFH.pdb');
-  if (!resp.ok) throw new Error('RCSB fetch failed: HTTP ' + resp.status);
+/* ===================== 3D STRUCTURE LOADING (robust, dual-structure) ===================== */
+// 6MV4 = real human FIXa EGF2+protease crystal structure (X-ray, 1.37A).
+// IMPORTANT: 6MV4's own ATOM records use classic CHYMOTRYPSIN numbering for chain H,
+// NOT this dataset's residue numbering. Verified anchors: chymotrypsin His57/Asp102/Ser195
+// = this dataset's His267/Asp315/Ser411 (catalytic triad). Only these three fixed,
+// individually-verified positions are used below -- per-variant highlighting on 6MV4 is
+// intentionally NOT attempted yet, since a full residue-level map between this dataset's
+// numbering and 6MV4's chymotrypsin numbering (which includes insertion-coded residues
+// like 60A/129A/184A/221A) hasn't been built and verified. See chat for details.
+const CATALYTIC_PDB = '6MV4';
+const CATALYTIC_TRIAD_AUTH = [
+  {chain:'H', resi:57,  label:'His57 (=His267)'},
+  {chain:'H', resi:102, label:'Asp102 (=Asp315)'},
+  {chain:'H', resi:195, label:'Ser195 (=Ser411)'},
+];
+const GLA_PDB = '1CFH'; // Gla-domain-only NMR fragment; used ONLY for Gla-domain variants
+
+let _pdbCache = {};
+async function loadPDBText(id){
+  if (_pdbCache[id]) return _pdbCache[id];
+  const resp = await fetch(`https://files.rcsb.org/download/${id}.pdb`);
+  if (!resp.ok) throw new Error(`RCSB fetch failed for ${id}: HTTP ` + resp.status);
   const text = await resp.text();
-  if (!text || text.indexOf('ATOM') === -1) throw new Error('Empty or invalid PDB response');
-  _pdbCache = text;
+  if (!text || text.indexOf('ATOM') === -1) throw new Error(`Empty or invalid PDB response for ${id}`);
+  _pdbCache[id] = text;
   return text;
 }
 
 function viewerMessage(el, text, isError){
   el.innerHTML = `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    text-align:center;padding:24px;font-family:${isError ? "'IBM Plex Mono'" : "'IBM Plex Mono'"},monospace;
+    text-align:center;padding:24px;font-family:'IBM Plex Mono',monospace;
     font-size:12px;color:${isError ? '#E08A8A' : '#8791AC'};line-height:1.6;">${text}</div>`;
 }
 
@@ -322,6 +338,17 @@ function selectVariant(v){
   document.getElementById('d-exon').textContent = v.ex || 'N/A';
   document.getElementById('d-cdna').textContent = v.cd || 'N/A';
   document.getElementById('d-freq').textContent = v.af || 'N/A';
+
+  const distWrap = document.getElementById('d-dist-wrap');
+  const sasaWrap = document.getElementById('d-sasa-wrap');
+  if (v.ddist != null){
+    distWrap.style.display = '';
+    document.getElementById('d-dist').textContent = v.ddist.toFixed(2) + ' \u00c5';
+  } else { distWrap.style.display = 'none'; }
+  if (v.sasaR != null){
+    sasaWrap.style.display = '';
+    document.getElementById('d-sasa').textContent = v.sasaR.toFixed(1) + '% relative (' + v.sasaA.toFixed(1) + ' \u00c5\u00b2 absolute)';
+  } else { sasaWrap.style.display = 'none'; }
   document.getElementById('d-observation').textContent = v.ob || 'No observation generated.';
   document.getElementById('d-impact').textContent = v.si || 'No structural impact generated.';
 
@@ -331,52 +358,86 @@ function selectVariant(v){
     : `<span class="dflag" style="opacity:.6"><i style="background:#5C6B8A;"></i>No catalytic/disulfide flag on this residue</span>`;
 
   drawMiniRuler(v.rs);
-  renderMiniViewer(v.rs);
+  renderMiniViewer(v);
 
   panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
-async function renderMiniViewer(residue){
+async function renderMiniViewer(v){
   const el = document.getElementById('mini-viewer');
-  viewerMessage(el, 'Loading structure\u2026', false);
-  try{
-    const pdb = await loadPDBText();
-    el.innerHTML = '';
-    miniViewer = $3Dmol.createViewer(el, {backgroundColor:'#0A0F1D'});
-    miniViewer.addModel(pdb, 'pdb');
-    miniViewer.setStyle({}, {cartoon:{color:'spectrum'}});
-    miniViewer.addStyle({resi:'411'}, {stick:{color:'yellow', radius:0.35}});
-    if (residue != null && residue > 0){
-      const resi = String(residue);
-      miniViewer.addStyle({resi:resi}, {stick:{color:'red', radius:0.45}});
-      miniViewer.zoomTo({resi:resi});
-    } else {
+  const dm = v.dm;
+
+  // Gla-domain variants: show the real Gla NMR fragment (1CFH), no per-residue highlight
+  // (no verified numbering map exists for this domain yet).
+  if (dm === 'Gla'){
+    viewerMessage(el, 'Loading Gla domain fragment (1CFH)\u2026', false);
+    try{
+      const pdb = await loadPDBText(GLA_PDB);
+      el.innerHTML = '';
+      miniViewer = $3Dmol.createViewer(el, {backgroundColor:'#0A0F1D'});
+      miniViewer.addModel(pdb, 'pdb');
+      miniViewer.setStyle({}, {cartoon:{color:'spectrum'}});
       miniViewer.zoomTo();
+      miniViewer.render();
+    } catch(err){
+      viewerMessage(el, 'Structure failed to load.<br>' + (err.message||'Unknown error'), true);
     }
-    miniViewer.render();
-  } catch(err){
-    console.error('Mini structure viewer failed:', err);
-    viewerMessage(el, 'Structure failed to load.<br>' + (err.message||'Unknown error') + '<br><br>Check your internet connection \u2014 this view loads live from files.rcsb.org.', true);
+    return;
   }
+
+  // EGF2 / Serine Protease variants: real per-residue highlighting on 6MV4, using the
+  // verified sequence-alignment numbering map (see Methodology). v.cn is this variant's
+  // exact position in 6MV4's own chain+chymotrypsin numbering.
+  if ((dm === 'EGF2' || dm === 'Serine Protease')){
+    viewerMessage(el, 'Loading EGF2/protease domain (6MV4)\u2026', false);
+    try{
+      const pdb = await loadPDBText(CATALYTIC_PDB);
+      el.innerHTML = '';
+      miniViewer = $3Dmol.createViewer(el, {backgroundColor:'#0A0F1D'});
+      miniViewer.addModel(pdb, 'pdb');
+      miniViewer.setStyle({}, {cartoon:{color:'spectrum'}});
+      CATALYTIC_TRIAD_AUTH.forEach(r=>{
+        miniViewer.addStyle({chain:r.chain, resi:r.resi}, {stick:{color:'yellow', radius:0.35}});
+      });
+      if (v.cn){
+        const chain = (dm === 'EGF2') ? 'L' : 'H';
+        miniViewer.addStyle({chain:chain, resi:v.cn}, {stick:{color:'red', radius:0.45}});
+        miniViewer.zoomTo({chain:chain, resi:v.cn});
+      } else {
+        miniViewer.zoomTo({chain:'H', resi:195});
+      }
+      miniViewer.render();
+    } catch(err){
+      viewerMessage(el, 'Structure failed to load.<br>' + (err.message||'Unknown error'), true);
+    }
+    return;
+  }
+
+  // Everything else (Signal Peptide, Propeptide, EGF1, Linker, Activation Peptide):
+  // no experimental structure currently in this atlas covers this region. Say so plainly
+  // rather than showing an unrelated structure.
+  viewerMessage(el, `No experimental structure in this atlas currently covers the ${DOMAIN_LABEL[dm]||dm||'unresolved'} region.<br><br>1CFH covers only the Gla domain; 6MV4 covers only EGF2 + the catalytic protease domain.`, false);
 }
 
 /* ===================== MAIN 3D VIEWER ===================== */
 async function renderMainViewer(){
   const el = document.getElementById('main-viewer');
-  viewerMessage(el, 'Loading PDB 1CFH from RCSB\u2026', false);
+  viewerMessage(el, 'Loading PDB 6MV4 (EGF2 + protease domain) from RCSB\u2026', false);
   try{
-    const pdb = await loadPDBText();
+    const pdb = await loadPDBText(CATALYTIC_PDB);
     el.innerHTML = '';
     const viewer = $3Dmol.createViewer(el, {backgroundColor:'#0A0F1D'});
     viewer.addModel(pdb, 'pdb');
     viewer.setStyle({}, {cartoon:{color:'spectrum'}});
-    viewer.addStyle({resi:'411'}, {stick:{color:'yellow', radius:0.35}});
+    CATALYTIC_TRIAD_AUTH.forEach(r=>{
+      viewer.addStyle({chain:r.chain, resi:r.resi}, {stick:{color:'yellow', radius:0.35}});
+    });
     viewer.zoomTo();
     viewer.render();
     viewer.spin('y', 0.4);
   } catch(err){
     console.error('Main structure viewer failed:', err);
-    viewerMessage(el, 'Structure failed to load.<br>' + (err.message||'Unknown error') + '<br><br>This view loads live from files.rcsb.org \u2014 check your internet connection or try refreshing.', true);
+    viewerMessage(el, 'Structure failed to load.<br>' + (err.message||'Unknown error') + '<br><br>This loads live from files.rcsb.org \u2014 check your connection or try refreshing.', true);
   }
 }
 

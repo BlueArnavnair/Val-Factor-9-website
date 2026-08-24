@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F9 Atlas — Factor IX Structural Mutation Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,560;0,9..144,650;1,9..144,450&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.3/3Dmol-min.js"></script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#0E1526;
+  --ink-2:#161F36;
+  --ink-line:#2A3654;
+  --paper:#EEF0EA;
+  --paper-2:#E4E7DD;
+  --paper-line:#CBCFC0;
+  --ink-text:#0E1526;
+  --paper-text-soft:#5B6156;
+  --crimson:#A3211F;
+  --crimson-dim:#7A1917;
+  --teal:#1F6F6B;
+  --amber:#C1811A;
+  --sage:#4F7D5B;
+  --slate:#5C6B8A;
+  --cream-text:#EDEAE0;
+  --display: 'Fraunces', serif;
+  --body: 'Inter', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+html,body{overflow-x:hidden;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink-text);
+  font-family:var(--body);
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;}
+::selection{background:var(--crimson);color:var(--cream-text);}
+:focus-visible{outline:2px solid var(--crimson);outline-offset:2px;}
+
+.eyebrow{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-weight:500;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+@media(max-width:640px){.wrap{padding:0 20px;}}
+
+/* ============ NAV ============ */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(14,21,38,.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--ink-line);
+}
+.nav-inner{
+  max-width:1180px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;
+}
+.brand{display:flex;align-items:center;gap:10px;color:var(--cream-text);text-decoration:none;}
+.brand-mark{
+  font-family:var(--mono);font-size:12px;font-weight:600;
+  border:1px solid var(--crimson);color:var(--crimson);
+  padding:3px 6px;letter-spacing:.05em;
+}
+.brand-name{font-family:var(--display);font-size:17px;font-weight:560;}
+.nav-links{display:flex;gap:28px;list-style:none;margin:0;padding:0;}
+.nav-links a{
+  color:#AFB6CC;text-decoration:none;font-size:13.5px;font-weight:500;
+  transition:color .15s;
+}
+.nav-links a:hover{color:var(--cream-text);}
+.nav-toggle{display:none;background:none;border:none;color:var(--cream-text);font-size:22px;cursor:pointer;}
+@media(max-width:760px){
+  .nav-links{display:none;}
+  .nav-toggle{display:block;}
+}
+
+/* ============ HERO ============ */
+.hero{
+  background:
+    radial-gradient(ellipse 900px 500px at 85% -10%, rgba(163,33,31,.18), transparent 60%),
+    linear-gradient(180deg,var(--ink) 0%, var(--ink-2) 100%);
+  color:var(--cream-text);
+  padding:76px 0 0 0;
+  position:relative;
+  overflow:hidden;
+}
+.hero-inner{max-width:1180px;margin:0 auto;padding:0 32px 56px;}
+.hero .eyebrow{color:var(--crimson);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.hero .eyebrow::before{content:'';width:26px;height:1px;background:var(--crimson);display:inline-block;}
+h1.hero-title{
+  font-family:var(--display);
+  font-weight:450;
+  font-size:clamp(34px,5.2vw,64px);
+  line-height:1.06;
+  letter-spacing:-.01em;
+  margin:0 0 26px;
+  max-width:15ch;
+}
+h1.hero-title em{font-style:italic;font-weight:560;color:var(--cream-text);}
+h1.hero-title .accent{color:var(--crimson);}
+.hero-sub{
+  font-size:16.5px;line-height:1.65;color:#C4C9DB;max-width:56ch;margin:0 0 40px;
+}
+.hero-sub b{color:var(--cream-text);font-weight:600;}
+
+.stat-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--ink-line);
+  margin-top:8px;
+}
+.stat{
+  padding:20px 22px 20px 0;border-right:1px solid var(--ink-line);
+}
+.stat:last-child{border-right:none;}
+.stat-num{
+  font-family:var(--mono);font-size:26px;font-weight:600;color:var(--cream-text);
+  display:block;
+}
+.stat-label{
+  font-size:11px;color:#8791AC;text-transform:uppercase;letter-spacing:.08em;margin-top:4px;display:block;
+}
+@media(max-width:760px){
+  .stat-row{grid-template-columns:repeat(2,1fr);}
+  .stat{border-bottom:1px solid var(--ink-line);padding-bottom:16px;margin-bottom:4px;}
+}
+
+/* ============ SIGNATURE: DOMAIN RULER ============ */
+.ruler-shell{
+  border-top:1px solid var(--ink-line);
+  padding:26px 0 34px;
+}
+.ruler-caption{
+  display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px;
+}
+.ruler-caption .eyebrow{color:#8791AC;}
+.ruler-legend{display:flex;gap:14px;flex-wrap:wrap;}
+.ruler-legend span{
+  font-family:var(--mono);font-size:10.5px;color:#AFB6CC;display:flex;align-items:center;gap:5px;
+}
+.ruler-legend i{width:9px;height:9px;display:inline-block;border-radius:1px;}
+#ruler-svg{width:100%;display:block;height:118px;overflow:visible;}
+.ruler-tooltip{
+  position:absolute;pointer-events:none;background:var(--ink);border:1px solid var(--ink-line);
+  color:var(--cream-text);font-family:var(--mono);font-size:11px;padding:8px 10px;
+  opacity:0;transform:translateY(4px);transition:opacity .12s;white-space:nowrap;z-index:20;
+}
+
+/* ============ SECTION SHELLS ============ */
+section{padding:88px 0;}
+.section-head{max-width:640px;margin-bottom:44px;}
+.section-head .eyebrow{color:var(--crimson-dim);margin-bottom:14px;}
+.section-title{
+  font-family:var(--display);font-weight:500;font-size:clamp(26px,3.4vw,38px);
+  line-height:1.15;margin:0 0 14px;letter-spacing:-.01em;
+}
+.section-desc{color:var(--paper-text-soft);font-size:15.5px;line-height:1.6;margin:0;}
+
+/* Core finding callout */
+.finding{
+  padding:90px 0 40px;
+}
+.finding-box{
+  border-left:3px solid var(--crimson);
+  padding:6px 0 6px 30px;
+  max-width:820px;
+}
+.finding-box .eyebrow{color:var(--crimson);margin-bottom:14px;}
+.finding-quote{
+  font-family:var(--display);font-style:italic;font-weight:450;
+  font-size:clamp(21px,2.6vw,29px);line-height:1.42;color:var(--ink-text);margin:0 0 18px;
+}
+.finding-quote b{font-weight:650;font-style:normal;background:linear-gradient(transparent 62%, rgba(163,33,31,.16) 62%);}
+.finding-note{font-size:14px;color:var(--paper-text-soft);line-height:1.6;max-width:60ch;}
+
+/* Figures */
+.figs{background:var(--paper);}
+.fig-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--paper-line);border:1px solid var(--paper-line);}
+.fig{background:var(--paper);padding:30px 30px 26px;}
+@media(max-width:820px){.fig-grid{grid-template-columns:1fr;}}
+.fig-label{font-family:var(--mono);font-size:11px;color:var(--paper-text-soft);letter-spacing:.08em;margin-bottom:6px;}
+.fig-title{font-family:var(--display);font-size:19px;font-weight:560;margin:0 0 20px;}
+.fig svg text{font-family:var(--body);}
+.legend-row{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:18px;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--paper-text-soft);}
+.legend-item i{width:10px;height:10px;border-radius:2px;flex:none;}
+
+/* 3D structure panel */
+.structure{
+  background:linear-gradient(180deg,var(--ink) 0%, var(--ink-2) 100%);
+  color:var(--cream-text);
+}
+.structure .section-desc{color:#B7BDD3;}
+.structure .eyebrow{color:var(--crimson);}
+.struct-grid{display:grid;grid-template-columns:1.05fr 1.4fr;gap:48px;align-items:center;}
+@media(max-width:900px){.struct-grid{grid-template-columns:1fr;}}
+.struct-note{font-size:14px;line-height:1.7;color:#AFB6CC;}
+.struct-note .flag{
+  display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;
+  border:1px solid var(--ink-line);padding:6px 10px;margin:4px 8px 4px 0;color:var(--cream-text);
+}
+.struct-note .flag i{width:8px;height:8px;border-radius:50%;}
+.viewer-box{
+  height:460px;border:1px solid var(--ink-line);background:#0A0F1D;position:relative;overflow:hidden;
+}
+.viewer-box .viewer-caption{
+  position:absolute;bottom:0;left:0;right:0;padding:10px 14px;font-family:var(--mono);font-size:11px;
+  color:#8791AC;background:linear-gradient(0deg, rgba(10,15,29,.9), transparent);
+}
+
+/* ============ EXPLORER ============ */
+.explorer{background:var(--paper-2);}
+.filters{
+  display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:26px;
+  padding:22px;background:var(--paper);border:1px solid var(--paper-line);
+}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--paper-text-soft);}
+.field input[type=text], .field select{
+  font-family:var(--body);font-size:14px;padding:9px 11px;border:1px solid var(--paper-line);
+  background:#fff;min-width:180px;color:var(--ink-text);
+}
+.field.search input{min-width:280px;}
+.field input:focus,.field select:focus{border-color:var(--crimson);}
+.checkfield{display:flex;align-items:center;gap:8px;padding-bottom:9px;}
+.checkfield input{width:15px;height:15px;accent-color:var(--crimson);}
+.checkfield label{font-size:13px;color:var(--ink-text);}
+.result-count{font-family:var(--mono);font-size:12px;color:var(--paper-text-soft);margin-left:auto;padding-bottom:9px;}
+
+.explorer-layout{display:grid;grid-template-columns:1fr;gap:20px;}
+.results-list{
+  border:1px solid var(--paper-line);background:var(--paper);max-height:560px;overflow-y:auto;
+}
+.result-row{
+  display:grid;grid-template-columns:110px 1fr 130px 100px;gap:12px;align-items:center;
+  padding:13px 16px;border-bottom:1px solid var(--paper-line);cursor:pointer;
+  transition:background .1s;
+}
+.result-row:last-child{border-bottom:none;}
+.result-row:hover{background:var(--paper-2);}
+.result-row.active{background:var(--ink);color:var(--cream-text);}
+.rr-hgvs{font-family:var(--mono);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rr-domain{font-size:12.5px;color:var(--paper-text-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.result-row.active .rr-domain{color:#AFB6CC;}
+.rr-res{font-family:var(--mono);font-size:12px;color:var(--paper-text-soft);}
+.result-row.active .rr-res{color:#AFB6CC;}
+.badge{
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;padding:3px 7px;
+  border-radius:2px;display:inline-block;text-align:center;text-transform:uppercase;
+}
+.badge-severe{background:rgba(163,33,31,.13);color:var(--crimson);}
+.badge-moderate{background:rgba(193,129,26,.15);color:var(--amber);}
+.badge-mild{background:rgba(79,125,91,.14);color:var(--sage);}
+.badge-unclassified{background:rgba(92,107,138,.14);color:var(--slate);}
+.empty-state{padding:60px 20px;text-align:center;color:var(--paper-text-soft);font-size:14px;}
+.empty-state b{display:block;font-family:var(--display);font-size:18px;color:var(--ink-text);margin-bottom:6px;font-weight:560;}
+
+.pager{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:1px solid var(--paper-line);font-family:var(--mono);font-size:11px;color:var(--paper-text-soft);}
+.pager button{
+  font-family:var(--mono);font-size:11px;background:none;border:1px solid var(--paper-line);
+  padding:5px 10px;cursor:pointer;color:var(--ink-text);
+}
+.pager button:disabled{opacity:.35;cursor:default;}
+
+/* Detail Panel */
+.detail{
+  border:1px solid var(--ink-line);background:var(--ink);color:var(--cream-text);
+  display:none;
+}
+.detail.show{display:block;}
+.detail-head{padding:26px 28px 20px;border-bottom:1px solid var(--ink-line);}
+.detail-eyebrow{font-family:var(--mono);font-size:11px;color:#8791AC;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.detail-title{font-family:var(--display);font-size:26px;font-weight:560;margin:0 0 10px;}
+.detail-flags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.dflag{
+  font-family:var(--mono);font-size:11px;padding:5px 9px;border:1px solid var(--ink-line);display:flex;align-items:center;gap:6px;
+}
+.dflag i{width:7px;height:7px;border-radius:50%;background:var(--crimson);}
+.detail-body{display:grid;grid-template-columns:1fr 1fr;}
+@media(max-width:880px){.detail-body{grid-template-columns:1fr;}}
+.detail-metrics{padding:22px 28px;border-right:1px solid var(--ink-line);border-bottom:1px solid var(--ink-line);}
+@media(max-width:880px){.detail-metrics{border-right:none;}}
+.dm-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-bottom:22px;}
+.dm-item .dm-label{font-family:var(--mono);font-size:10px;color:#8791AC;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.dm-item .dm-value{font-family:var(--mono);font-size:15px;color:var(--cream-text);}
+.mech-block{margin-bottom:18px;}
+.mech-label{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.mech-label.obs{color:#7DA9C4;}
+.mech-label.imp{color:var(--amber);}
+.mech-text{font-size:13.5px;line-height:1.65;color:#C4C9DB;}
+.mini-ruler{margin-top:20px;}
+.mini-viewer{height:100%;min-height:340px;border-bottom:1px solid var(--ink-line);}
+.detail-viewer-wrap{padding:22px 28px;display:flex;flex-direction:column;}
+.mini-viewer-box{flex:1;min-height:300px;background:#0A0F1D;border:1px solid var(--ink-line);position:relative;overflow:hidden;}
+.mini-caption{font-family:var(--mono);font-size:11px;color:#8791AC;margin-top:10px;line-height:1.6;}
+.dot-red{color:var(--crimson);}
+.dot-yellow{color:#E8C547;}
+
+/* Methodology / footer */
+.methodology{background:var(--paper);}
+.method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:10px;}
+@media(max-width:820px){.method-grid{grid-template-columns:1fr;}}
+.method-col .num{font-family:var(--mono);font-size:11px;color:var(--crimson);margin-bottom:10px;display:block;}
+.method-col h4{font-family:var(--display);font-size:18px;font-weight:560;margin:0 0 10px;}
+.method-col p{font-size:13.5px;line-height:1.65;color:var(--paper-text-soft);margin:0;}
+code{font-family:var(--mono);background:var(--paper-2);padding:1px 5px;border-radius:2px;font-size:0.92em;}
+.disclaimer{
+  margin-top:56px;padding:20px 24px;border:1px dashed var(--paper-line);font-size:12.5px;
+  color:var(--paper-text-soft);line-height:1.6;background:var(--paper-2);
+}
+
+footer{background:var(--ink);color:#8791AC;padding:36px 0;}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-inner .brand-name{color:var(--cream-text);}
+footer a{color:#AFB6CC;text-decoration:none;font-size:12.5px;}
+footer a:hover{color:var(--cream-text);}
+.foot-links{display:flex;gap:22px;font-family:var(--mono);}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  *{transition:none !important;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">F9</span>
+      <span class="brand-name">Structural Mutation Atlas</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#structure">3D Structure</a></li>
+      <li><a href="#explorer">Variant Explorer</a></li>
+      <li><a href="#methodology">Methodology</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <div class="eyebrow">STRUCTURE&ndash;FUNCTION ATLAS &middot; HEMOPHILIA B</div>
+    <h1 class="hero-title">Severity isn&rsquo;t about how big the substitution is. It&rsquo;s about <em>where</em> it lands.</h1>
+    <p class="hero-sub">
+      An interactive atlas of <b id="hero-count">4,713</b> Factor IX (F9) gene variants, mapped onto the
+      protein&rsquo;s structure to test one hypothesis: clinical severity in Hemophilia B tracks the
+      <b>structural importance of the mutation site</b> &mdash; catalytic residues, disulfide bridges,
+      domain interfaces &mdash; more than the physical size of the amino-acid swap itself.
+    </p>
+    <div class="stat-row" id="stat-row"></div>
+  </div>
+  <div class="ruler-shell">
+    <div class="wrap">
+      <div class="ruler-caption">
+        <span class="eyebrow">FIG. 0 &mdash; LINEAR DOMAIN MAP, PRECURSOR RESIDUE NUMBERING (1&ndash;461)</span>
+        <div class="ruler-legend" id="ruler-legend"></div>
+      </div>
+      <div style="position:relative;">
+        <svg id="ruler-svg" viewBox="0 0 1116 118" preserveAspectRatio="none"></svg>
+        <div class="ruler-tooltip" id="ruler-tip"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="overview" class="finding">
+  <div class="wrap">
+    <div class="finding-box">
+      <div class="eyebrow">CORE FINDING</div>
+      <p class="finding-quote">
+        Clinical severity in Hemophilia B correlates less with <b>how large</b> the substituted
+        side chain is, and more with <b>whether the mutation lands</b> on a catalytic triad
+        residue, a disulfide-bonded cysteine, or a domain interface.
+      </p>
+      <p class="finding-note">
+        Tested here across 4,713 logged variant reports spanning the signal peptide, propeptide,
+        Gla domain, EGF1, EGF2, the activation peptide/linker region, and the catalytic serine
+        protease domain of Factor IX (structural context from PDB 1CFH and 6MV4 &mdash; see
+        Structure section below for exactly what each covers).
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="figs">
+  <div class="wrap">
+    <div class="fig-grid">
+      <div class="fig">
+        <div class="fig-label">FIG. 1</div>
+        <div class="fig-title">Mutation distribution across domains</div>
+        <svg id="fig-donut" viewBox="0 0 300 300" style="width:100%;max-width:320px;display:block;margin:0 auto;"></svg>
+        <div class="legend-row" id="donut-legend"></div>
+      </div>
+      <div class="fig">
+        <div class="fig-label">FIG. 2</div>
+        <div class="fig-title">Severity profile by domain</div>
+        <svg id="fig-bar" viewBox="0 0 460 300" style="width:100%;display:block;"></svg>
+        <div class="legend-row" id="bar-legend"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="structure" class="structure">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">CATALYTIC DOMAIN STRUCTURE &mdash; REAL COORDINATES, NOT THE FULL PROTEIN</div>
+      <h2 class="section-title">The EGF2 &amp; protease domain, rendered live from PDB 6MV4</h2>
+      <p class="section-desc">A genuine human Factor IXa X-ray structure (1.37&Aring; resolution), covering the EGF2 and catalytic protease domains. The full 4-domain protein has never been solved as a single structure, so this atlas doesn't claim to show one &mdash; see the note below for exactly what is and isn't covered.</p>
+    </div>
+    <div class="struct-grid">
+      <div class="struct-note">
+        <p>This structure loads directly from the RCSB Protein Data Bank at runtime. An earlier version
+        of this atlas used PDB 1CFH labeled as the "full structure" &mdash; that was wrong: 1CFH is a
+        1995 NMR structure of only the ~46-residue Gla domain fragment, and never contained a residue
+        411 at all. It's now used only for Gla-domain variants, correctly labeled.</p>
+        <div style="margin-top:18px;">
+          <span class="flag"><i style="background:#E8C547;"></i> Catalytic triad &mdash; His267 / Asp315 / Ser411 (this dataset's numbering)</span>
+          <span class="flag"><i style="background:#7DA9C4;"></i> Disulfide-bonded cysteines &mdash; verified by wild-type residue, not position alone</span>
+        </div>
+        <p style="margin-top:18px;">6MV4's own atom records use a <em>third</em> numbering convention
+        (classic chymotrypsin numbering) &mdash; the catalytic triad shown here is at chymotrypsin
+        His57/Asp102/Ser195, individually verified to correspond to this dataset's His267/Asp315/Ser411.
+        A complete, verified residue-by-residue map between the two numbering schemes has now been
+        built (Methodology, items 10&ndash;11) via sequence alignment against the real 6MV4 chains
+        &mdash; per-variant highlighting, real C&alpha;&ndash;C&alpha; distance to Ser411, and real
+        solvent accessibility (freesasa) are now live for every EGF2 and Serine Protease domain
+        variant. Open one in the Explorer below to see it.</p>
+        <p style="margin-top:12px;"><b>Coverage:</b> Gla domain variants show the 1CFH fragment. EGF2
+        and Serine Protease domain variants show this 6MV4 structure with real per-residue metrics.
+        Signal Peptide, Propeptide, EGF1, Linker, and Activation Peptide variants (~1,056 records)
+        currently have no experimental structure in this atlas &mdash; the Explorer says so plainly
+        rather than guessing.</p>
+      </div>
+      <div class="viewer-box" id="main-viewer">
+        <div class="viewer-caption">6MV4 &middot; EGF2 + protease domain &middot; yellow = catalytic triad (His57/Asp102/Ser195 in this structure's own numbering)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="explorer" class="explorer">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">VARIANT EXPLORER</div>
+      <h2 class="section-title">Search all 4,713 logged variants</h2>
+      <p class="section-desc">Filter by domain or severity, or search by HGVS notation, arrow notation (Asn &gt; Asp), or residue number. Select a row to open its structural mechanism card.</p>
+    </div>
+
+    <div class="filters">
+      <div class="field search">
+        <label for="f-search">Search variant</label>
+        <input type="text" id="f-search" placeholder="e.g. p.Ile7Phe, Asn &gt; Asp, or residue 86">
+      </div>
+      <div class="field">
+        <label for="f-domain">Domain</label>
+        <select id="f-domain"><option value="">All domains</option></select>
+      </div>
+      <div class="field">
+        <label for="f-severity">Severity</label>
+        <select id="f-severity">
+          <option value="">All severities</option>
+          <option>Severe</option><option>Moderate</option><option>Mild</option><option>Unclassified</option>
+        </select>
+      </div>
+      <div class="checkfield">
+        <input type="checkbox" id="f-missense" checked>
+        <label for="f-missense">Missense only</label>
+      </div>
+      <div class="result-count" id="result-count"></div>
+    </div>
+
+    <div class="explorer-layout">
+      <div class="results-list" id="results-list"></div>
+      <div class="pager">
+        <button id="prev-page">&larr; Prev</button>
+        <span id="page-info"></span>
+        <button id="next-page">Next &rarr;</button>
+      </div>
+
+      <div class="detail" id="detail">
+        <div class="detail-head">
+          <div class="detail-eyebrow">VARIANT PROFILE</div>
+          <div class="detail-title" id="d-title">&mdash;</div>
+          <div class="detail-flags" id="d-flags"></div>
+        </div>
+        <div class="detail-body">
+          <div class="detail-metrics">
+            <div class="dm-grid">
+              <div class="dm-item"><div class="dm-label">Residue</div><div class="dm-value" id="d-residue">&mdash;</div></div>
+              <div class="dm-item"><div class="dm-label">Severity</div><div class="dm-value" id="d-severity">&mdash;</div></div>
+              <div class="dm-item"><div class="dm-label">Domain</div><div class="dm-value" id="d-domain">&mdash;</div></div>
+              <div class="dm-item"><div class="dm-label">Exon / Region</div><div class="dm-value" id="d-exon">&mdash;</div></div>
+              <div class="dm-item"><div class="dm-label">cDNA</div><div class="dm-value" id="d-cdna">&mdash;</div></div>
+              <div class="dm-item"><div class="dm-label">Allele frequency</div><div class="dm-value" id="d-freq">&mdash;</div></div>
+              <div class="dm-item" id="d-dist-wrap" style="display:none;"><div class="dm-label">Dist. to Ser411 (C&alpha;&ndash;C&alpha;, real 6MV4)</div><div class="dm-value" id="d-dist">&mdash;</div></div>
+              <div class="dm-item" id="d-sasa-wrap" style="display:none;"><div class="dm-label">Solvent accessibility (real, freesasa)</div><div class="dm-value" id="d-sasa">&mdash;</div></div>
+            </div>
+            <div class="mech-block">
+              <div class="mech-label obs">&#128269; Observation</div>
+              <div class="mech-text" id="d-observation">&mdash;</div>
+            </div>
+            <div class="mech-block">
+              <div class="mech-label imp">&#9889; Structural impact</div>
+              <div class="mech-text" id="d-impact">&mdash;</div>
+            </div>
+            <svg id="mini-ruler" viewBox="0 0 100 22" style="width:100%;height:26px;" class="mini-ruler"></svg>
+          </div>
+          <div class="detail-viewer-wrap">
+            <div class="mini-viewer-box" id="mini-viewer"></div>
+            <div class="mini-caption"><span class="dot-yellow">&#9679;</span> catalytic triad &nbsp; <span class="dot-red">&#9679;</span> this variant's residue (EGF2/protease-domain variants only &mdash; real, verified mapping, see Methodology)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="methodology" class="methodology">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">METHODOLOGY</div>
+      <h2 class="section-title">How this atlas is built</h2>
+      <p class="section-desc">A short account of the data pipeline behind the numbers above.</p>
+    </div>
+    <div class="method-grid">
+      <div class="method-col">
+        <span class="num">01</span>
+        <h4>Normalize the record</h4>
+        <p>Raw variant reports are parsed, domain labels are standardized against the five major
+        Factor IX regions, and clinical severity is bucketed into Severe / Moderate / Mild /
+        Unclassified.</p>
+      </div>
+      <div class="method-col">
+        <span class="num">02</span>
+        <h4>Score the substitution</h4>
+        <p>Each missense change is evaluated for charge, polarity, and side-chain size delta.
+        Disulfide and catalytic-triad flags are only applied when the wild-type residue at that
+        position is independently confirmed to be the expected amino acid (e.g. a flagged disulfide
+        position must actually be a cysteine in this dataset) &mdash; a position number alone is not
+        treated as sufficient evidence.</p>
+      </div>
+      <div class="method-col">
+        <span class="num">03</span>
+        <h4>Map to structure</h4>
+        <p>Residue numbers are checked against two real experimental structures where coverage
+        exists: PDB 1CFH (Gla domain, NMR) and PDB 6MV4 (EGF2 + catalytic protease domain,
+        1.37&Aring; X-ray). No single solved structure currently covers the full protein, and
+        this atlas says so rather than implying one does &mdash; see the Structure section for
+        exact coverage and numbering caveats.</p>
+      </div>
+    </div>
+    <div class="method-grid" style="margin-top:36px;">
+      <div class="method-col">
+        <span class="num">04</span>
+        <h4>Nomenclature</h4>
+        <p>Variants follow standard HGVS notation throughout: <code>c.</code> for coding-DNA change
+        and <code>p.</code> for the predicted protein consequence, so entries can be mapped directly
+        onto external references (ClinVar, dbSNP, EAHAD) without translation.</p>
+      </div>
+      <div class="method-col">
+        <span class="num">05</span>
+        <h4>Why 8 regions, not 4</h4>
+        <p>Mature, circulating Factor IX has 4 core functional domains &mdash; Gla, EGF1, EGF2, and
+        the catalytic serine protease domain. This atlas additionally tracks the signal peptide,
+        propeptide, and activation peptide as distinct regions, since variants in these
+        transiently-present, processing-stage segments are clinically reported and structurally
+        meaningful even though they're cleaved away in the final circulating protein. That yields 8
+        tracked regions in total, not a contradiction of the 4-domain mature structure.</p>
+      </div>
+      <div class="method-col">
+        <span class="num">06</span>
+        <h4>Silent variants</h4>
+        <p>Synonymous (silent) substitutions don't change the protein sequence, so their severity
+        &mdash; which in the underlying reports ranges from Mild to Severe &mdash; can't be explained
+        by the structural model used here. Where a variant is silent, its card says so explicitly and
+        names the transcript-level mechanisms (cryptic splice sites, mRNA secondary structure, codon
+        usage bias) that could plausibly account for it instead.</p>
+      </div>
+    </div>
+    <div class="method-grid" style="margin-top:36px;">
+      <div class="method-col">
+        <span class="num">07</span>
+        <h4>Cysteine-gain variants</h4>
+        <p>154 variants introduce a new cysteine where none existed before (e.g. Trp240Cys). An
+        unpaired, non-disulfide-bonded cysteine is a distinct, well-documented pathogenic mechanism
+        &mdash; it can form aberrant disulfide bonds or trigger ER quality-control degradation &mdash;
+        and is now flagged separately from cysteine <em>loss</em>.</p>
+      </div>
+      <div class="method-col">
+        <span class="num">08</span>
+        <h4>5&prime; UTR &amp; promoter context</h4>
+        <p>Non-coding 5&prime; UTR variants are checked against the literature-characterized Factor IX
+        promoter: the Leyden-specific region (&minus;34 to +19) and the experimentally validated
+        LF-A1/HNF4 &amp; androgen-receptor binding oligonucleotide (&minus;40 to &minus;9) implicated in
+        hemophilia B Leyden (Crossley &amp; Brownlee 1990; Crossley et al., <em>Science</em> 1992; OMIM
+        *300746), plus the core Kozak consensus (&minus;6 to &minus;1). Variants outside these
+        characterized elements are labeled as such rather than left unexplained.</p>
+      </div>
+      <div class="method-col">
+        <span class="num">09</span>
+        <h4>Identity over position</h4>
+        <p>Every structural flag in this atlas (disulfide, catalytic, cysteine-gain) is checked against
+        the actual wild-type amino acid at that residue, not inferred from a position number alone.
+        This process went through two corrections during development: an initial claim of
+        "His233/Asp282/Ser411" was disproven (233 is Alanine here), a revised "His282/Ser411" was
+        <em>also</em> incomplete (282 is genuinely Histidine but not the true triad member), and the
+        final, fully verified triad &mdash; His267 / Asp315 / Ser411 &mdash; was confirmed by applying
+        the classic His221/Asp269/Ser365 numbering with the same +46 residue offset independently
+        confirmed via Ser365&rarr;Ser411.</p>
+      </div>
+    </div>
+    <div class="method-grid" style="margin-top:36px;">
+      <div class="method-col">
+        <span class="num">10</span>
+        <h4>Real structural metrics (EGF2 / protease domain)</h4>
+        <p>PDB 6MV4 (Vadivel et al. 2019) uses its own numbering internally &mdash; classic
+        chymotrypsin numbering with insertion codes (e.g. His<b>57</b>/Asp<b>102</b>/Ser<b>195</b>
+        for the triad), not this dataset's numbering. A residue-by-residue mapping was built by
+        globally aligning this dataset's consensus wild-type sequence against 6MV4's real chain
+        sequences (Biopython pairwise alignment), then verified against all three known triad
+        anchors before use. This yielded a complete, gap-free map for the Serine Protease domain
+        (235/235 positions) and a near-complete map for EGF2 (41/43 positions).</p>
+      </div>
+      <div class="method-col">
+        <span class="num">11</span>
+        <h4>Distance &amp; solvent accessibility</h4>
+        <p>Using that verified map, every covered residue now has a real C&alpha;&ndash;C&alpha;
+        distance to the catalytic Ser411 (computed directly from 6MV4's atomic coordinates) and a
+        real solvent accessibility value (freesasa). These replace guesswork with measured numbers
+        for <b>2,662 of 4,713 variants</b> &mdash; those in the EGF2 and Serine Protease domains.
+        The remaining ~2,050 variants (Gla domain, EGF1, signal peptide, propeptide, activation
+        peptide, linker) still have no verified structural coordinates in this atlas.</p>
+      </div>
+      <div class="method-col">
+        <span class="num">12</span>
+        <h4>What this is (and isn't) yet</h4>
+        <p>These are geometric measurements (distance, exposure), not energetic predictions. No
+        &Delta;&Delta;G stability, hydrogen-bond network, or binding-energy calculation has been
+        performed for any variant. Distance and accessibility are computed on the
+        <em>wild-type</em> structure only &mdash; no mutant structures have been modeled.</p>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <b style="color:var(--ink-text);">This is a research and educational tool, not a diagnostic
+      one.</b> Severity classifications, structural flags, and mechanism text are generated from
+      aggregated variant reports and standard biochemical rules of thumb &mdash; they are not a
+      substitute for clinical genetic counselling or a curated reference database such as the
+      EAHAD Coagulation Factor Variant Databases. Residue numbering follows the precursor-inclusive
+      scheme used in the source dataset and may differ from mature-chain numbering used in some
+      literature.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <span class="brand-name" style="font-family:var(--display);font-size:16px;">F9 Structural Mutation Atlas</span>
+    <div class="foot-links">
+      <a href="#top">Back to top</a>
+      <a href="https://github.com/BlueArnavnair/factor9-database" target="_blank" rel="noopener">Source data &amp; pipeline</a>
+      <a href="https://www.rcsb.org/structure/1CFH" target="_blank" rel="noopener">PDB 1CFH</a>
+      <a href="https://www.rcsb.org/structure/6MV4" target="_blank" rel="noopener">PDB 6MV4</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
