@@ -233,6 +233,20 @@ function applyFilters(){
     }
     return true;
   });
+
+  // Default sort: variants with real structural data (distance/SASA/ddG/H-bonds) first,
+  // so casual browsing surfaces the tool's most complete records immediately rather than
+  // requiring dozens of pages through structurally-uncovered domains before seeing anything.
+  // Only applied when the person hasn't typed a search query (search results keep relevance order).
+  if (!q){
+    filtered = filtered.map((v,i)=>({v,i})).sort((a,b)=>{
+      const aHas = a.v.ddist != null ? 1 : 0;
+      const bHas = b.v.ddist != null ? 1 : 0;
+      if (aHas !== bHas) return bHas - aHas;
+      return a.i - b.i; // stable: preserve original relative order within each group
+    }).map(x=>x.v);
+  }
+
   page = 0;
   renderResults();
 }
@@ -240,7 +254,8 @@ function applyFilters(){
 function renderResults(){
   const list = document.getElementById('results-list');
   const count = document.getElementById('result-count');
-  count.textContent = `${fmtInt(filtered.length)} match${filtered.length===1?'':'es'}`;
+  const structCount = filtered.filter(v=>v.ddist != null).length;
+  count.textContent = `${fmtInt(filtered.length)} match${filtered.length===1?'':'es'} \u00b7 ${fmtInt(structCount)} with real structural data`;
 
   if (filtered.length === 0){
     list.innerHTML = `<div class="empty-state"><b>No variants match these filters</b>Try clearing the search or widening the domain / severity filters.</div>`;
@@ -257,9 +272,11 @@ function renderResults(){
 
   list.innerHTML = pageItems.map(v=>{
     const active = v.id === selectedId ? 'active' : '';
+    const hasStruct = v.ddist != null;
+    const structDot = hasStruct ? '<span title="Real structural data available (distance/SASA/&#916;&#916;G/H-bonds)" style="color:#4F7D5B;margin-right:4px;">&#9679;</span>' : '';
     return `<div class="result-row ${active}" data-id="${v.id}">
       <span class="rr-hgvs">${labelFor(v).split(' (Residue')[0]}</span>
-      <span class="rr-domain">${DOMAIN_LABEL[v.dm] || v.dm || 'Unresolved region'}</span>
+      <span class="rr-domain">${structDot}${DOMAIN_LABEL[v.dm] || v.dm || 'Unresolved region'}</span>
       <span class="rr-res">${v.rs!=null ? 'Res '+v.rs : '—'}</span>
       ${severityBadge(v.sv)}
     </div>`;
