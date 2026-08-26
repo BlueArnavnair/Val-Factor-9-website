@@ -349,6 +349,20 @@ function selectVariant(v){
     sasaWrap.style.display = '';
     document.getElementById('d-sasa').textContent = v.sasaR.toFixed(1) + '% relative (' + v.sasaA.toFixed(1) + ' \u00c5\u00b2 absolute)';
   } else { sasaWrap.style.display = 'none'; }
+
+  const ddgWrap = document.getElementById('d-ddg-wrap');
+  const hbondWrap = document.getElementById('d-hbond-wrap');
+  if (v.ddg != null){
+    ddgWrap.style.display = '';
+    const sign = v.ddg > 0 ? '+' : '';
+    document.getElementById('d-ddg').textContent = sign + v.ddg.toFixed(2) + ' kcal/mol';
+  } else { ddgWrap.style.display = 'none'; }
+  if (v.whb != null){
+    hbondWrap.style.display = '';
+    let txt = v.whb + ' measured contact' + (v.whb===1?'':'s') + ' (wild type)';
+    if (v.mhb != null) txt += ' \u2192 ' + v.mhb + ' theoretical capacity (mutant, by chemistry)';
+    document.getElementById('d-hbond').textContent = txt;
+  } else { hbondWrap.style.display = 'none'; }
   document.getElementById('d-observation').textContent = v.ob || 'No observation generated.';
   document.getElementById('d-impact').textContent = v.si || 'No structural impact generated.';
 
